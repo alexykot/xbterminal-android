@@ -14,7 +14,7 @@ public class JSONencoding {
 		try {
 			 jObj = new JSONObject(json.substring(json.indexOf("{"), json.lastIndexOf("}") + 1));
 		} 
-	    catch (JSONException e) {
+	    catch (Exception e) {
 			e.printStackTrace();
 		}
 	return jObj;
@@ -85,7 +85,10 @@ public class JSONencoding {
                 autorization.put("MERCHANT_DEVICE_NAME", json.getString("MERCHANT_DEVICE_NAME"));
                 autorization.put("MERCHANT_NAME", json.getString("MERCHANT_NAME"));
                 autorization.put("BITCOIN_NETWORK", json.getString("BITCOIN_NETWORK"));
+                autorization.put("MERCHANT_CURRENCY", json.getString("MERCHANT_CURRENCY"));
                 
+                autorization.put("MERCHANT_CURRENCY_SIGN_POSTFIX", json.getString("MERCHANT_CURRENCY_SIGN_POSTFIX"));
+                autorization.put("MERCHANT_CURRENCY_SIGN_PREFIX", json.getString("MERCHANT_CURRENCY_SIGN_PREFIX"));
 
 	
                }

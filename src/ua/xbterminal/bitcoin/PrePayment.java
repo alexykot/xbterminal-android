@@ -20,7 +20,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -30,7 +29,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -45,22 +43,24 @@ private String SendToNFC;
 private String data;
 private Handler mHandler = new Handler();
 boolean isRun;
+SharedPreferences prefs;
+final Handler uiHandler = new Handler();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.pre_payments);
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
-			tv1.setText(prefs.getString("BITCOIN_NETWORK", "testnet")+" active");
+			tv1.setText(getString(R.string.testnet));
 		else
 			tv1.setText("");
 		TextView tv4 = (TextView) findViewById(R.id.textView4);
-		tv4.setText(prefs.getString("MERCHANT_NAME", "XBT Services LTD"));
+		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
 		TextView tv5 = (TextView) findViewById(R.id.textView5);
-		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", "Incubator #1"));
+		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));
 		
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> order = (HashMap<String, String>) getIntent().getSerializableExtra("value");
@@ -78,7 +78,9 @@ boolean isRun;
 		
 		
 		TextView in = (TextView)findViewById(R.id.in);
-		in.setText("£ "+addCurrencySign(order.get("fiat_amount")));
+		in.setText(prefs.getString("MERCHANT_CURRENCY_SIGN_POSTFIX", "")+
+				prefs.getString("MERCHANT_CURRENCY_SIGN_PREFIX", "")+
+				" "+addCurrencySign(order.get("fiat_amount")));
 		
 		TextView out = (TextView)findViewById(R.id.out);
 		Double toBeTruncated = (Double.parseDouble(order.get("btc_amount"))*1000);
@@ -88,7 +90,7 @@ boolean isRun;
 		TextView rate = (TextView)findViewById(R.id.rate);
 		toBeTruncated = Double.parseDouble(order.get("exchange_rate"));
 		truncatedDouble = new BigDecimal(toBeTruncated ).setScale(2, BigDecimal.ROUND_HALF_DOWN).doubleValue();
-		rate.setText("Exchange rate "+truncatedDouble);
+		rate.setText(getString(R.string.exchange)+" "+truncatedDouble);
 		
 		ImageView qr = (ImageView)findViewById(R.id.qr_code);
 		
@@ -121,10 +123,50 @@ boolean isRun;
 
 				    }, this, this);  
 			}
-		   
+
+		   if(savedInstanceState!=null){
+			   count = savedInstanceState.getInt("count");
+			   isRun = savedInstanceState.getBoolean("isRun");
+		   }
 		   mHandler.postDelayed(mUpdateTimeTask, 0);
 		   mHandler.postDelayed(mTime, 0);
+		   
+		   //startService(new Intent(this, ServiceApi.class));
+			uiHandler.postDelayed(Api,0);
 	}
+	@Override
+	public void onBackPressed()
+	{
+	stopService(new Intent(this, ServiceApi.class));
+	finish();
+	}
+	  private Runnable Api = new Runnable() {
+		   public void run() {
+			   uiHandler.post(new Runnable() {  // используя Handler, привязанный к UI-Thread
+			        @Override
+			        public void run() {
+			        	TextView tv1 = (TextView) findViewById(R.id.textView1);
+			    		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
+			    			tv1.setText(getString(R.string.testnet));
+			    		else
+			    			tv1.setText("");
+			    		TextView tv4 = (TextView) findViewById(R.id.textView4);
+			    		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
+			    		TextView tv5 = (TextView) findViewById(R.id.textView5);
+			    		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));   // выполним установку значения
+			        }
+			    });
+			   uiHandler.postDelayed(Api, 1000);
+		   }
+		};
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+	    super.onSaveInstanceState(outState);
+	    outState.putInt("count", count);
+	    outState.putBoolean("isRun", isRun);
+	   // outState.putString("text1", text1.getText().toString());
+	}
+	
 	private String addCurrencySign(String digits)
     {
 	    String string = ""; // Your currency
@@ -150,8 +192,8 @@ boolean isRun;
 				 mHandler.postDelayed(mUpdateTimeTask, 2000);
 		   }
 		};
+		private int count = 0;
 		private Runnable mTime = new Runnable() {
-			int count = 0;
 			   public void run() {
 				   if(count==600){
 					    startActivity(new Intent(PrePayment.this, Splash.class));
@@ -257,7 +299,7 @@ boolean isRun;
 					protected void onPostExecute(String result) {
 						
 						if(error)
-							Toast.makeText(getBaseContext(), "No connection", Toast.LENGTH_LONG).show();
+							Toast.makeText(getBaseContext(), getString(R.string.error), Toast.LENGTH_LONG).show();
 						else{
 							if(result!=null){
 								JSONencoding JS = new JSONencoding();

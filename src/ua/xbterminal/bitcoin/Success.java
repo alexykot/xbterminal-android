@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -30,23 +29,24 @@ public class Success extends Activity {
 	private String SendToNFC;
 	private String data;
 	private Handler mHandler = new Handler();
-	boolean isRun;
-	
+	SharedPreferences prefs;
+	final Handler uiHandler = new Handler();
+	 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.success);
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
-			tv1.setText(prefs.getString("BITCOIN_NETWORK", "testnet")+" active");
+			tv1.setText(getString(R.string.testnet));
 		else
 			tv1.setText("");
 		TextView tv4 = (TextView) findViewById(R.id.textView4);
-		tv4.setText(prefs.getString("MERCHANT_NAME", "XBT Services LTD"));
+		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
 		TextView tv5 = (TextView) findViewById(R.id.textView5);
-		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", "Incubator #1"));
+		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));
 		
 		@SuppressWarnings("unchecked")
 		HashMap<String, String> order = (HashMap<String, String>) getIntent().getSerializableExtra("value");
@@ -61,7 +61,7 @@ public class Success extends Activity {
 			}
 			
 		});
-ImageView qr = (ImageView)findViewById(R.id.qr_code);
+		ImageView qr = (ImageView)findViewById(R.id.qr_code);
 
 		SendToNFC = order.get("receipt_url");
 		
@@ -91,11 +91,49 @@ ImageView qr = (ImageView)findViewById(R.id.qr_code);
 
 				    }, this, this);  
 			}
-		   
+		   if(savedInstanceState!=null){
+			   count = savedInstanceState.getInt("count");
+		   }
 		   mHandler.postDelayed(mTime, 0);
+		   
+		  // startService(new Intent(this, ServiceApi.class));
+			uiHandler.postDelayed(Api,0);
 	}
+	@Override
+	public void onBackPressed()
+	{
+	stopService(new Intent(this, ServiceApi.class));
+	finish();
+	}
+	
+	  private Runnable Api = new Runnable() {
+		   public void run() {
+			   uiHandler.post(new Runnable() {  // используя Handler, привязанный к UI-Thread
+			        @Override
+			        public void run() {
+			        	TextView tv1 = (TextView) findViewById(R.id.textView1);
+			    		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
+			    			tv1.setText(getString(R.string.testnet));
+			    		else
+			    			tv1.setText("");
+			    		TextView tv4 = (TextView) findViewById(R.id.textView4);
+			    		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
+			    		TextView tv5 = (TextView) findViewById(R.id.textView5);
+			    		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));         // выполним установку значения
+			        }
+			    });
+			   uiHandler.postDelayed(Api, 1000);
+		   }
+		};
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+	    super.onSaveInstanceState(outState);
+	    outState.putInt("count", count);
+	}
+		
+	private int count = 0;
 	private Runnable mTime = new Runnable() {
-		int count = 0;
+
 		   public void run() {
 			   if(count==600){
 				    startActivity(new Intent(Success.this, Splash.class));
@@ -106,8 +144,8 @@ ImageView qr = (ImageView)findViewById(R.id.qr_code);
 				 mHandler.postDelayed(mTime, 1000);
 		   }
 		};
-protected void onDestroy(){
-	super.onDestroy();
-	mHandler.removeCallbacks(mTime);	
-}
+	protected void onDestroy(){
+		super.onDestroy();
+		mHandler.removeCallbacks(mTime);	
+	}
 }

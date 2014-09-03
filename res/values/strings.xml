@@ -2,6 +2,29 @@
 <resources>
 
     <string name="app_name">X฿Terminal</string>
-    <string name="hello_world">Hello world!</string>
-
+    <string name="online"><a href="https://xbterminal.io/registration/">Create account online</a></string>
+    
+    <string name="tap">Tap screen\nto begin</string>
+    <string name="cancel">Cancel</string>
+    <string name="pay_now">Pay now</string>
+    <string name="pay_sucess">PAYMENT SUCCESSFUL</string>
+    <string name="touch">TOUCH NFC NOW</string>
+    <string name="scan">SCAN QR CODE FOR RECEIPE</string>
+    <string name="close">Close</string>
+	<string name="link">Link device to account</string>
+	<string name="have">Have account?</string>
+	<string name="paste">Paste key or scan QR code</string>
+	<string name="done">Done</string>
+	<string name="or">or</string>
+	<string name="testnet">testnet active</string>
+	<string name="exchange">Exchange rate</string>
+	<string name="amount">amount</string>
+	<string name="touch_again">TOUCH NFC AGAIN\nOR SCAN QR CODE\nFOR RECEIPT</string>
+	
+	
+	<string name="load">Loading, please wait</string>
+	<string name="enter">Enter the value!</string>
+	<string name="error">Error connection</string>
+	<string name="invalid">Invalid key</string>
+	
 </resources>

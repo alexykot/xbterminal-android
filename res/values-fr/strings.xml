@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">X฿Terminal</string>
+    <string name="online"><a href="https://xbterminal.io/registration/">Terminer ou créer votre compte en ligne</a></string>
+    
+    <string name="tap">Toucher l\'écran\npour commencer</string>
+    <string name="cancel">Annuler</string>
+    <string name="pay_now">Payer maintenant</string>
+    <string name="pay_sucess">Paiement réuissi</string>
+    <string name="touch">Toucher NFC maintenant</string>
+    <string name="scan">Scanner QR code pour le reçu</string>
+    <string name="close">Fermer</string>
+	<string name="link">Connection à votre compte</string>
+	<string name="have">Avez-vou un compte</string>
+	<string name="paste">Taper votre clé ou bien scanner QR code</string>
+	<string name="done">Fin</string>
+	<string name="or">ou</string>
+	<string name="testnet">Testnet actif</string>
+	<string name="exchange">Taux</string>
+	<string name="amount">somme</string>
+	<string name="touch_again">Toucher NFC\nou Scanner QR code\npour le reçu</string>
+	
+	<string name="load">Chargement..</string>
+	<string name="enter">Entrez la valeur!</string>
+	<string name="error">Connexion d\'erreur</string>
+	<string name="invalid">clé non valide</string>
+</resources>

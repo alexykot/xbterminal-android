@@ -16,23 +16,23 @@ import org.apache.http.params.HttpParams;
 import ua.xbterminal.bitcoin.R;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,21 +44,26 @@ public class MainActivity extends Activity {
 	device_key: <device_key>*/
 	private String url = Util.URL+"/api/payments/init";
 	EditText editText;TextView textview;	RelativeLayout.LayoutParams params;
+	final Handler uiHandler = new Handler();
+	SharedPreferences prefs;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+		prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 		TextView tv1 = (TextView) findViewById(R.id.textView1);
 		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
-			tv1.setText(prefs.getString("BITCOIN_NETWORK", "testnet")+" active");
+			tv1.setText(getString(R.string.testnet));
 		else
 			tv1.setText("");
 		TextView tv4 = (TextView) findViewById(R.id.textView4);
-		tv4.setText(prefs.getString("MERCHANT_NAME", "XBT Services LTD"));
+		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
 		TextView tv5 = (TextView) findViewById(R.id.textView5);
-		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", "Incubator #1"));
+		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));
+		TextView val = (TextView) findViewById(R.id.val);
+		val.setText(prefs.getString("MERCHANT_CURRENCY_SIGN_POSTFIX", "")+prefs.getString("MERCHANT_CURRENCY_SIGN_PREFIX", ""));
 		
 		textview = (TextView)findViewById(R.id.textView7);
 		params = (RelativeLayout.LayoutParams)textview.getLayoutParams();
@@ -97,18 +102,48 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				if(textview.length()==0 || Double.valueOf(textview.getText().toString())==0){
-					editText.setError("Enter the value!");
+					editText.setError(getString(R.string.enter));
 					
-					params.setMargins(8, 0, 50, 0); //substitute parameters for left, top, right, bottom
+					params.setMargins(8, 0, editText.getWidth()/8, 0); //substitute parameters for left, top, right, bottom
 					textview.setLayoutParams(params);
 				}
 				else
-					new RequestTask().execute(url,textview.getText().toString(),getIntent().getStringExtra("key"));
+					new RequestTask().execute(url, textview.getText().toString(),getIntent().getStringExtra("key"));
 			}
 			
 		});
+		
+		//startService(new Intent(this, ServiceApi.class));
+		uiHandler.postDelayed(Api,1000);
+	}
+@Override
+	public void onBackPressed()
+	{
+	stopService(new Intent(this, ServiceApi.class));
+	finish();
 	}
 
+	  private Runnable Api = new Runnable() {
+		   public void run() {
+			   uiHandler.post(new Runnable() {  // используя Handler, привязанный к UI-Thread
+			        @Override
+			        public void run() {
+			        	TextView tv1 = (TextView) findViewById(R.id.textView1);
+			    		if(!prefs.getString("BITCOIN_NETWORK", "testnet").equals("mainnet"))
+			    			tv1.setText(getString(R.string.testnet));
+			    		else
+			    			tv1.setText("");
+			    		TextView tv4 = (TextView) findViewById(R.id.textView4);
+			    		tv4.setText(prefs.getString("MERCHANT_NAME", ""));
+			    		TextView tv5 = (TextView) findViewById(R.id.textView5);
+			    		tv5.setText(prefs.getString("MERCHANT_DEVICE_NAME", ""));
+			    		TextView val = (TextView) findViewById(R.id.val);
+			    		val.setText(prefs.getString("MERCHANT_CURRENCY_SIGN_POSTFIX", "")+prefs.getString("MERCHANT_CURRENCY_SIGN_PREFIX", ""));        // выполним установку значения
+			        }
+			    });
+			   uiHandler.postDelayed(Api, 1000);
+		   }
+		};
 	private String addCurrencySign(String digits)
     {
 	    String string = ""; // Your currency
@@ -151,10 +186,14 @@ public class MainActivity extends Activity {
 			super.onPreExecute();
 			
 			dialog = new ProgressDialog(MainActivity.this);
-			dialog.setMessage("Loading...");
+			dialog.setMessage(getString(R.string.load));
 			dialog.setIndeterminate(true);
 			dialog.setCancelable(true);
-			dialog.show();
+			//dialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+			
+			try{
+				dialog.show();
+				}catch(Exception w){}
 
 		}
 		
@@ -182,7 +221,7 @@ public class MainActivity extends Activity {
 				postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs,"UTF-8"));
 
 				response = hc.execute(postMethod, res);
-				Log.d("Main", "Answer = "+response);
+				//Log.d("Main", "Answer = "+response);
 				error = false;
 			} catch (Exception e) {
 				error = true;	
@@ -195,10 +234,12 @@ public class MainActivity extends Activity {
 		@Override
 		protected void onPostExecute(String result) {
 
-			dialog.dismiss();
+			try{
+				dialog.dismiss();
+			}catch(Exception e){}
 			
 			if(error)
-				Toast.makeText(getBaseContext(), "Error convert", Toast.LENGTH_LONG).show();
+				Toast.makeText(getBaseContext(), getString(R.string.error) , Toast.LENGTH_LONG).show();
 			else{
 				JSONencoding JS = new JSONencoding();
 				startActivity(new Intent(MainActivity.this, PrePayment.class).putExtra("value", JS.DecodingPay(JS.toJSONOject(result))));

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">X฿Terminal</string>
+    <string name="online"><a href="https://xbterminal.io/registration/">Создать аккаунт на сайте</a></string>
+    
+    <string name="tap">Прикоснитесь к экрану\nчтобы начать</string>
+    <string name="cancel">Отмена</string>
+    <string name="pay_now">Оплатить</string>
+    <string name="pay_sucess">Оплата завершена</string>
+    <string name="touch">NFC активен</string>
+    <string name="scan">Отсканируйте QR код для получения чека</string>
+    <string name="close">Закрыть</string>
+	<string name="link">Привязать устройство к аккаунту</string>
+	<string name="have">Есть аккаунт?</string>
+	<string name="paste">Введите ключ или отсканируйте QR код</string>
+	<string name="done">Готово</string>
+	<string name="or">или</string>
+	<string name="testnet">testnet включён</string>
+	<string name="exchange">Курс обмена</string>
+	<string name="amount">сумма</string>
+	<string name="touch_again">прикоснитесь к NFC снова\nили отсканнируйте QR код\nчтобы получить чек</string>
+
+	<string name="load">Загружается, пожалуйста подождите</string>
+	<string name="enter">Введите значение!</string>
+	<string name="error">Ошибка подключения</string>
+	<string name="invalid">Неверный ключ</string>
+</resources>
